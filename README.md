@@ -18,6 +18,25 @@ Lusty94_Yoga
 - Add all images inside [images] folder to your inventory/html/images folder
 
 
+## OX INVENTORY USERS - SUPPLIES SHOP
+
+- If you are using ox_inventory you must add this snippet below to ox_inventory/data/shops.lua for the supplies ped store to work correctly. 
+``
+YogaSupplies = {
+		name = 'Yoga Supplies',
+		inventory = {
+			{ name = 'yogamat', price = 50 },
+			{ name = 'water_bottle', price = 10 },
+		},
+		locations = {
+			vec3(-1162.7, -1585.86, 4)
+		}, 
+		targets = {
+			{ loc = vec3(-1162.7, -1585.86, 4), length = 1.5, width = 0.5, heading = 287.44, minZ = 3.25, maxZ = 4.5, distance = 2 }
+		}
+	},
+``
+
 
 # Items
 ```

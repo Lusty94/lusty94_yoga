@@ -1,5 +1,5 @@
 local QBCore = exports['qb-core']:GetCoreObject()
-
+local ShopType = Config.CoreSettings.Shop.Type
 
 --Blip
 CreateThread(function()
@@ -22,10 +22,12 @@ end)
 --Yoga Mat Store
 RegisterNetEvent("lusty94_yoga:client:openYogaStore", function()
     if Config.CoreSettings.Shop.Enabled then
-        if Config.CoreSettings.Shop.Type == 'qb' then
+        if ShopType == 'qb'then
             TriggerServerEvent("inventory:server:OpenInventory", "shop", "Yoga", Config.InteractionLocations.Store.Items)
-        elseif Config.CoreSettings.Shop.Type == 'jim' then
+        elseif ShopType == 'jim' then
             TriggerServerEvent("jim-shops:ShopOpen", "shop", "Yoga", Config.InteractionLocations.Store.Items)
+        elseif ShopType == 'ox' then
+            print('ShopType is set to "ox" make sure you have added the required snippet from the readme file to ox_inventory/data/shops.lua as this is now controlled by ox_inventory')
         end
     end
 end)
@@ -124,11 +126,11 @@ AddEventHandler('onResourceStop', function(resourceName) if resourceName ~= GetC
     end
         print('^5--<^3!^5>-- ^7Lusty94 ^5| ^5--<^3!^5>--^Yoga V1.1.0 Stopped Successfully^5--<^3!^5>--^7')
 
-        if Config.CoreSettings.Target.Type == 'qb' then
+        if TargetType== 'qb' then
         exports['qb-target']:RemoveZone("StoreZone")
         elseif Config.CoreSettings.Type == 'ox' then
             exports.ox_target:removeZone(1)
-        elseif Config.CoreSettings.Target.Type == 'custom' then
+        elseif TargetType== 'custom' then
             -- insetrt custom code for removing shop zone
         end
 end)

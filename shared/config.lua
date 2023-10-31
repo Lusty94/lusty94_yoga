@@ -38,10 +38,16 @@ Config.CoreSettings = {
         --use 'ox' for ox_target
     },
     Shop = {
-        Enabled = true, -- set to true to use the inbuilt shop system [DONT FORGET TO EDIT CONFIG.INTERACTIONLOCATIONS.STORE] - set to false if you are using your own methods to obtain the item
-        Type = 'qb', -- support for qb-shops and jim-shops
+        Enabled = true, -- set to true to use the inbuilt shop system [QB INVENTORY ONLY] [DONT FORGET TO EDIT CONFIG.INTERACTIONLOCATIONS.STORE] - set to false if you are using your own methods to obtain the item
+        Type = 'qb', -- support for qb-inventory shops, jim-shops and ox_inventory shops - IF USING OX INVENTORY YOU MUST CREATE YOUR OWN SHOP INSIDE OX_INVENTORY TO ACCESS THE SUPPLIES STORE USING THE SNIPPET PROVIDED IN THE README FILE
         --use 'qb' for qb-shops
         --use 'jim' for jim-shops
+        --use 'ox' for ox_inventory shops
+    },
+    Inventory = { --support for qb-inventory and ox_inventory
+        Type = 'qb',
+        --use 'qb' for qb-inventory
+        --use 'ox' for ox_inventory
     },
     ProgressBar = {
         PerformYoga = 15000, -- time it takes in MS to perform yoga, defualt is set to 15 seconds [15000 ms]  to prevent abuse and exploits
