@@ -21,6 +21,9 @@ Config.Blips = {
 
 
 Config.CoreSettings = {
+    EventNames = {
+        HudStatus = 'hud:server:RelieveStress', -- NAME OF HUD EVENT TO RELIEVE STRESS - DEFAULT EVENT NAME IS 'hud:server:RelieveStress'
+    }, 
     Notify = {
         Type = 'qb', -- support for qb-core notify, okokNotify, mythic_notify, boii_ui notify and ox_lib notify
         --use 'qb' for default qb-core notify
@@ -28,9 +31,6 @@ Config.CoreSettings = {
         --use 'mythic' for mythic_notify
         --use 'boii' for boii_ui notify
         --use 'ox' for ox_lib notify
-        UseSound = true, -- uses sound for okokNotify
-        SuccessLength = 2500, -- success notification length
-        ErrorLength = 2500, -- error notification length
     },
     Target = {
         Type = 'qb' -- support for qb-target and ox_target
@@ -38,8 +38,8 @@ Config.CoreSettings = {
         --use 'ox' for ox_target
     },
     Shop = {
-        Enabled = true, -- set to true to use the inbuilt shop system [QB INVENTORY ONLY] [DONT FORGET TO EDIT CONFIG.INTERACTIONLOCATIONS.STORE] - set to false if you are using your own methods to obtain the item
-        Type = 'qb', -- support for qb-inventory shops, jim-shops and ox_inventory shops - IF USING OX INVENTORY YOU MUST CREATE YOUR OWN SHOP INSIDE OX_INVENTORY TO ACCESS THE SUPPLIES STORE USING THE SNIPPET PROVIDED IN THE README FILE
+        Enabled = true, --use the inbuilt target shop system set to false if you have your own methods of obtaining a yoga mat
+        Type = 'qb', -- support for qb-inventory shops, jim-shops and ox_inventory shops
         --use 'qb' for qb-shops
         --use 'jim' for jim-shops
         --use 'ox' for ox_inventory shops
@@ -49,13 +49,12 @@ Config.CoreSettings = {
         --use 'qb' for qb-inventory
         --use 'ox' for ox_inventory
     },
-    ProgressBar = {
-        PerformYoga = 15000, -- time it takes in MS to perform yoga, defualt is set to 15 seconds [15000 ms]  to prevent abuse and exploits
-    },
-    EventNames = {
-        HudStatus = 'hud:server:RelieveStress', -- NAME OF HUD EVENT TO RELIEVE STRESS - DEFAULT EVENT NAME IS 'hud:server:RelieveStress'
-    },    
+    Timers = {
+        PlaceMat = 1000, -- time it takes in MS to place yoga mat
+        PerformYoga = 20000, -- time it takes in MS to perform yoga, defualt is set to 15 seconds [15000 ms]  to prevent abuse and exploits
+    },       
     Effects = {
+
         AddHealth = true, -- set to true to add health to a player when using a yoga mat
         HealthAmount = math.random(10,20), -- if set to true then how much health does the player gain?
 
@@ -69,43 +68,20 @@ Config.CoreSettings = {
 }
 
 
-Config.InteractionLocations = { -- this section is only relevant if Config.CoreSettings.Shop.Enabled is set to true otherwise you can ignore this as it just creates a box zone to purchase a yoga mat from
-    Store = {
-        Location = {
-            Location = vector3(-1162.7, -1585.86, 4), -- location of boxzone
-            Width = 1.5, --width of boxzone
-            Height = 0.5, -- height of boxzone
-            Heading = 287.44, -- heading of boxzone
-            MinZ = 3.25, -- minz of boxzone
-            MaxZ = 4.5, -- maxz of boxzone
-            Icon = 'fa-solid fa-cash-register', -- icon for target
-            Label = 'Open Yoga Store', -- label for target
-            Size = vec3(1.5,0.5,1), -- ONLY USED FOR OX_TARGET
-        },
-        Items = {
-            label = "Yoga Store",
-            slots = 2,
-            items = {
-                [1] = { name = "yogamat", price = 50, amount = 100, info = {}, type = "item", slot = 1,},
-                [2] = { name = "water_bottle", price = 10, amount = 100, info = {}, type = "item", slot = 2,},
-            },
-        },
-    },
+Config.InteractionLocations = { --name must be unique, coords is location, size is for ox target only, width is width of zone, height is height of zone, heading is direction, minZ is minZ of zone, maxZ is maxZ of zone, icon is target icon, label is target label, item is required item to target zone, job is required job to target zone leave as nil if not needed, distance is target distance
+    { Name = 'yogashop1', Coords = vector3(-1165.15, -1584.65, 4.0), Size = vec3(1.5,1.0,2.0), Width = 1.5, Height = 1.0, Heading = 301.39, MinZ = 3.75, MaxZ = 5.0, Icon = 'fa-solid fa-cash-register', Label = 'Open Yoga Store', Event = 'lusty94_yoga:client:openYogaStore', Distance = 2.0, Item = nil, Job = nil, },
 }
 
 
 Config.Animations = {
-
-    YogaMat = {
-        AnimDict = "amb@world_human_yoga@male@base",
-        Anim = "base_b",
-        Flags = 42,
+    PlaceYogaMat = {
+        dict = "random@domestic",
+        anim = "pickup_low",
+        flag = 42,
     },
-
-}
-
-
-Config.Language = {
-    Notifications = { CancelledLabel = "Cancelled!", MissingItemsLabel = "Mising Items!", MissingItemsName = "You Can Not Perform Yoga Without A Mat, You Will Get Sore Knees!!", },
-    YogaMat = { ProgressBarName = "Performing Yoga!", NotifyLabel = "Yoga Finished!", NotifyName = "You Performed Yoga And You Feel Better For It!", },
+    PerformYoga = {
+        dict = "amb@world_human_yoga@male@base",
+        anim = "base_b",
+        flag = 42,
+    },
 }

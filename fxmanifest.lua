@@ -8,18 +8,17 @@ name "lusty94_yoga"
 
 description 'Yoga Activity Script For QB Core'
 
-version '1.0.0'
+version '2.0.0'
 
 lua54 'yes'
 
 client_script {
-    'client/yoga_client.lua',
-    'shared/targets.lua',
+    'client/**.lua',
 }
 
 
 server_scripts { 
-    'server/yoga_server.lua',
+    'server/**.lua',
 }
 
 
