@@ -1,9 +1,10 @@
 local QBCore = exports['qb-core']:GetCoreObject()
-local ShopType = Config.CoreSettings.Shop.Type
 local TargetType = Config.CoreSettings.Target.Type
-local InventoryType = Config.CoreSettings.Inventory.Type
+local InvType = Config.CoreSettings.Inventory.Type
 local NotifyType = Config.CoreSettings.Notify.Type
-local busy = false
+local busy, matSpawned, hasPerformed = false, false, false
+local yogaprop = nil
+
 
 --notification function
 local function SendNotify(msg,type,time,title)
@@ -29,7 +30,7 @@ end
 CreateThread(function()
     for k, v in pairs(Config.Blips) do
         if v.useblip then
-            v.blip = AddBlipForCoord(v['coords'].x, v['coords'].y, v['coords'].z)
+            v.blip = AddBlipForCoord(v.coords.x, v.coords.y, v.coords.z)
             SetBlipSprite(v.blip, v.id)
             SetBlipDisplay(v.blip, 4)
             SetBlipScale(v.blip, v.scale)
@@ -46,20 +47,10 @@ end)
 --Yoga Mat Store
 RegisterNetEvent("lusty94_yoga:client:openYogaStore", function()
     if Config.CoreSettings.Shop.Enabled then
-        local yogaShop = {
-            label = "Yoga Store",
-            slots = 2,
-            items = {
-                [1] = { name = "yogamat", price = 50, amount = 100, info = {}, type = "item", slot = 1,},
-                [2] = { name = "water_bottle", price = 10, amount = 100, info = {}, type = "item", slot = 2,},
-            },
-        }
-        if ShopType == 'qb'then
-            TriggerServerEvent("inventory:server:OpenInventory", "shop", "Yoga", yogaShop)
-        elseif ShopType == 'jim' then
-            TriggerServerEvent("jim-shops:ShopOpen", "shop", "Yoga", yogaShop)
-        elseif ShopType == 'ox' then
-            exports.ox_inventory:openInventory('shop', { type = 'yogaShop' })
+        if InvType == 'qb'then
+            TriggerServerEvent('lusty94_yoga:server:openYogaStore')
+        elseif InvType == 'ox' then
+            exports.ox_inventory:openInventory('shop', { type = 'YogaShop' })
         end
     end
 end)
@@ -80,14 +71,14 @@ CreateThread(function()
     end
 end)
 
-local yogaprop = nil
-local matSpawned = false
+
+
 --use yoga mat
 RegisterNetEvent('lusty94_yoga:client:PlaceYogaMat', function()
     QBCore.Functions.TriggerCallback('lusty94_yoga:get:YogaMat', function(HasItems)  
         if HasItems then
             if busy then
-                SendNotify("You Are Already Doing Something!", 'error', 2000)
+                SendNotify("You are already doing something!", 'error', 2000)
             else
                 if matSpawned then
                     SendNotify("You must remove your yoga mat before placing another!", 'error', 2000)
@@ -95,19 +86,16 @@ RegisterNetEvent('lusty94_yoga:client:PlaceYogaMat', function()
                 end
                 busy = true
                 if lib.progressCircle({ duration = Config.CoreSettings.Timers.PlaceMat, label = 'Placing yoga mat...', position = 'bottom', useWhileDead = false, canCancel = true, disable = { car = true, move = true, }, anim = { dict = Config.Animations.PlaceYogaMat.dict, clip = Config.Animations.PlaceYogaMat.anim, flag = Config.Animations.PlaceYogaMat.flag, }, }) then
-                    local player = PlayerPedId()
-                    local coords    = GetEntityCoords(player)
+                    local playerPed = PlayerPedId()
+                    local coords    = GetEntityCoords(playerPed)
                     local x, y, z   = table.unpack(coords)        
                     local mat = `prop_yoga_mat_03`
-                    RequestModel(mat)
-                    while (not HasModelLoaded(mat)) do
-                        Wait(1000)
-                    end
+                    lib.requestModel(mat, 5000)
                     yogaprop = CreateObject(mat, x, y, z, true, false, true)
                     PlaceObjectOnGroundProperly(yogaprop)
                     SetEntityAsMissionEntity(yogaprop)
                     local heading   = GetEntityHeading(yogaprop)
-                    SetEntityHeading(PlayerPedId(), heading + 90)
+                    SetEntityHeading(playerPed, GetEntityHeading(playerPed))
                     if TargetType == 'qb' then
                         exports['qb-target']:AddTargetEntity(yogaprop, { options = { { type = "client", event = 'lusty94_yoga:client:performYoga', icon = 'fa-solid fa-hand-point-up', label = 'Perform Yoga', }, { type = "client", event = 'lusty94_yoga:client:removeYogaMat', icon = 'fa-solid fa-hand-point-up', label = 'Remove Yoga Mat', }, }, distance = 1.75 })
                     elseif TargetType == 'ox' then
@@ -115,11 +103,9 @@ RegisterNetEvent('lusty94_yoga:client:PlaceYogaMat', function()
                     end
                     matSpawned = true
                     busy = false
-                    ClearPedTasks(PlayerPedId())
                     SendNotify("Yoga mat placed!", 'success', 2000)
                 else 
                     busy = false
-                    ClearPedTasks(PlayerPedId())
                     SendNotify("Action cancelled!", 'success', 2000)
                 end
             end
@@ -129,47 +115,70 @@ RegisterNetEvent('lusty94_yoga:client:PlaceYogaMat', function()
     end)     
 end)
 
+--cooldown function to prevent abuse
+function yogaCooldown()
+    local timer =  20 * 1000 -- 20 seconds
+    if hasPerformed then
+        return
+    end
+    hasPerformed = true
+    SetTimeout(timer, function()
+        hasPerformed = false
+    end)
+end
 
---use yoga mat
+--perform yoga
 RegisterNetEvent('lusty94_yoga:client:performYoga', function()
-    QBCore.Functions.TriggerCallback('lusty94_yoga:get:YogaMat', function(HasItems)  
-        if HasItems then
-            if busy then
-                SendNotify("You Are Already Doing Something!", 'error', 2000)
-            else
-                local success = lib.skillCheck({'easy', 'easy', 'easy', 'easy', 'easy'}, {'e'})
-                if success then
-                    busy = true
-                    local matcoords    = GetEntityCoords(yogaprop)
-                    local heading   = GetEntityHeading(yogaprop)
-                    SetEntityCoords(PlayerPedId(), matcoords.x, matcoords.y, matcoords.z, true, true, true, false)
-                    SetEntityHeading(PlayerPedId(), heading + 90)
-                    if lib.progressCircle({ duration = Config.CoreSettings.Timers.PerformYoga, label = 'Performing yoga...', position = 'bottom', useWhileDead = false, canCancel = true, disable = { car = true, move = true, }, anim = { dict = Config.Animations.PerformYoga.dict, clip = Config.Animations.PerformYoga.anim, flag = Config.Animations.PerformYoga.flag, }, }) then
-                        if Config.CoreSettings.Effects.AddHealth then
-                            SetEntityHealth(PlayerPedId(), GetEntityHealth(PlayerPedId()) + Config.CoreSettings.Effects.HealthAmount)
+    local playerPed = PlayerPedId()
+    if hasPerformed then
+        SendNotify("You must wait a short while before doing that again!", 'error', 2000)
+        return
+    else
+        if busy then
+            SendNotify("You are already doing something!", 'error', 2000)
+        else
+            QBCore.Functions.TriggerCallback('lusty94_yoga:get:YogaMat', function(HasItems)  
+                if HasItems then
+                    local success = lib.skillCheck({'easy', 'easy', 'easy', 'easy', 'easy'}, {'e'})
+                    if success then
+                        busy = true
+                        local matcoords    = GetEntityCoords(yogaprop)
+                        local heading   = GetEntityHeading(yogaprop)
+                        SetEntityCoords(playerPed, matcoords.x, matcoords.y, matcoords.z, true, true, true, false)
+                        SetEntityHeading(playerPed, heading + 90)
+                        if lib.progressCircle({ 
+                            duration = Config.CoreSettings.Timers.PerformYoga, 
+                            label = 'Performing yoga...', 
+                            position = 'bottom', 
+                            useWhileDead = false, 
+                            canCancel = true, 
+                            disable = { car = true, move = true, }, 
+                            anim = { dict = Config.Animations.PerformYoga.dict, clip = Config.Animations.PerformYoga.anim, flag = Config.Animations.PerformYoga.flag, }, 
+                        }) then
+                            if Config.CoreSettings.Effects.AddHealth then
+                                SetEntityHealth(playerPed, GetEntityHealth(playerPed) + Config.CoreSettings.Effects.HealthAmount)
+                            end
+                            if Config.CoreSettings.Effects.AddArmour then
+                                AddArmourToPed(playerPed, Config.CoreSettings.Effects.ArmourAmount)
+                            end
+                            if Config.CoreSettings.Effects.RemoveStress then
+                                TriggerServerEvent(Config.CoreSettings.EventNames.HudStatus, Config.CoreSettings.Effects.RemoveStressAmount)
+                            end
+                            busy = false
+                            SendNotify("You performed yoga!", 'success', 2000)
+                        else 
+                            busy = false
+                            SendNotify("Action cancelled!", 'success', 2000)
                         end
-                        if Config.CoreSettings.Effects.AddArmour then
-                            AddArmourToPed(PlayerPedId(), Config.CoreSettings.Effects.ArmourAmount)
-                        end
-                        if Config.CoreSettings.Effects.RemoveStress then
-                            TriggerServerEvent(Config.CoreSettings.EventNames.HudStatus, Config.CoreSettings.Effects.RemoveStressAmount)
-                        end
-                        busy = false
-                        ClearPedTasks(PlayerPedId())
-                        SendNotify("You performed yoga!", 'success', 2000)
-                    else 
-                        busy = false
-                        ClearPedTasks(PlayerPedId())
-                        SendNotify("Action cancelled!", 'success', 2000)
+                    else
+                        SendNotify("Action failed.", 'error', 2000)
                     end
                 else
-                    SendNotify("Action failed.", 'error', 2000)
+                    SendNotify("How can you perform yoga without a yoga mat?!", 'error', 2500)
                 end
-            end
-        else
-            SendNotify("How can you perform yoga without a yoga mat?!", 'error', 2500)
+            end)     
         end
-    end)     
+    end
 end)
 
 
@@ -199,6 +208,6 @@ AddEventHandler('onResourceStop', function(resource)
         delete_prop(yogaprop)
         if Config.CoreSettings.Shop.Enabled then for k, v in pairs(Config.InteractionLocations) do if TargetType == 'qb' then exports['qb-target']:RemoveZone(v.Name) elseif TargetType == 'ox' then exports.ox_target:removeZone(v.Name) end end end
         if TargetType == 'qb' then exports['qb-target']:RemoveTargetEntity(yogaprop, 'yogaprop') elseif TargetType == 'ox' then exports.ox_target:removeLocalEntity(yogaprop, 'yogaprop') end
-        print('^5--<^3!^5>-- ^7| Lusty94 |^5 ^5--<^3!^5>--^7 Yoga V2.0.0 Stopped Successfully ^5--<^3!^5>--^7')
+        print('^5--<^3!^5>-- ^7| Lusty94 |^5 ^5--<^3!^5>--^7 Yoga V2.0.1 Stopped Successfully ^5--<^3!^5>--^7')
 	end
 end)

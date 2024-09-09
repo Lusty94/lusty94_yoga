@@ -39,10 +39,6 @@ Config.CoreSettings = {
     },
     Shop = {
         Enabled = true, --use the inbuilt target shop system set to false if you have your own methods of obtaining a yoga mat
-        Type = 'qb', -- support for qb-inventory shops, jim-shops and ox_inventory shops
-        --use 'qb' for qb-shops
-        --use 'jim' for jim-shops
-        --use 'ox' for ox_inventory shops
     },
     Inventory = { --support for qb-inventory and ox_inventory
         Type = 'qb',
