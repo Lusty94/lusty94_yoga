@@ -1,10 +1,14 @@
 local QBCore = exports['qb-core']:GetCoreObject()
 local InvType = Config.CoreSettings.Inventory.Type
 
+
+
 --Useable Yoga Mat
 QBCore.Functions.CreateUseableItem("yogamat", function(source, item)
     TriggerClientEvent("lusty94_yoga:client:PlaceYogaMat", source)
 end)
+
+
 
 --Yoga Mat Callback
 QBCore.Functions.CreateCallback('lusty94_yoga:get:YogaMat', function(source, cb)
@@ -17,6 +21,8 @@ QBCore.Functions.CreateCallback('lusty94_yoga:get:YogaMat', function(source, cb)
     end
 end)
 
+
+--qb-inventory yoga shop
 RegisterNetEvent('lusty94_yoga:server:openYogaStore', function()
     local src = source
     local Player = QBCore.Functions.GetPlayer(src)
@@ -35,40 +41,42 @@ RegisterNetEvent('lusty94_yoga:server:openYogaStore', function()
     end
 end)
 
---smoking shop for ox_inventory
-function YogaShop()
-    exports.ox_inventory:RegisterShop('YogaShop', {
-        name = 'Yoga Shop',
-        inventory = {
-            { name = 'yogamat', price = 50 },
-            { name = 'water_bottle', price = 10 },
-        },
-    })
-end
-
-
--- dont touch this is for ox stashes and shops
+--shop for ox_inventory
 AddEventHandler('onResourceStart', function(resourceName)
     if (GetCurrentResourceName() == resourceName) then
         if InvType == 'ox' then
             if Config.CoreSettings.Shop.Enabled then
-                print('^5--<^3!^5>-- ^7| Lusty94_Yoga |^5 ^5--<^3!^5>--^7')
-                print('^5--<^3!^5>-- ^7| Inventory Type is set to ox |^5 ^5--<^3!^5>--^7')
-                print('^5--<^3!^5>-- ^7| Registering shops automatically |^5 ^5--<^3!^5>--^7')
-                YogaShop()
-                print('^5--<^3!^5>-- ^7| Shops registered successfully |^5 ^5--<^3!^5>--^7')
+                exports.ox_inventory:RegisterShop('YogaShop', {
+                    name = 'Yoga Shop',
+                    inventory = {
+                        { name = 'yogamat', price = 50 },
+                        { name = 'water_bottle', price = 10 },
+                    },
+                })
             end
         end
     end
 end)
 
+--------------< VERSION CHECK >-------------
+
 local function CheckVersion()
-	PerformHttpRequest('https://raw.githubusercontent.com/Lusty94/UpdatedVersions/main/Yoga/version.txt', function(err, newestVersion, headers)
-		local currentVersion = GetResourceMetadata(GetCurrentResourceName(), 'version')
-		if not newestVersion then print("Currently unable to run a version check.") return end
-		local advice = "^1You are currently running an outdated version^7, ^1please update^7"
-		if newestVersion:gsub("%s+", "") == currentVersion:gsub("%s+", "") then advice = '^6You are running the latest version.^7'
-		else print("^3Version Check^7: ^2Current^7: "..currentVersion.." ^2Latest^7: "..newestVersion..advice) end
-	end)
+    PerformHttpRequest('https://raw.githubusercontent.com/Lusty94/UpdatedVersions/main/Yoga/version.txt', function(err, newestVersion, headers)
+        local currentVersion = GetResourceMetadata(GetCurrentResourceName(), 'version')
+        if not newestVersion then
+            print('^1[Lusty94_Yoga]^7: Unable to fetch the latest version.')
+            return
+        end
+
+        newestVersion = newestVersion:gsub('%s+', '')
+        currentVersion = currentVersion and currentVersion:gsub('%s+', '') or 'Unknown'
+
+        if newestVersion == currentVersion then
+            print(string.format('^2[Lusty94_Yoga]^7: ^6You are running the latest version.^7 (^2v%s^7)', currentVersion))
+        else
+            print(string.format('^2[Lusty94_Yoga]^7: ^3Your version: ^1v%s^7 | ^2Latest version: ^2v%s^7\n^1Please update to the latest version | Changelogs can be found in the support discord.^7', currentVersion, newestVersion))
+        end
+    end)
 end
+
 CheckVersion()

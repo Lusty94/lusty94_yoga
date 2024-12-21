@@ -44,26 +44,61 @@ CreateThread(function()
 end)
 
 
---Yoga Mat Store
-RegisterNetEvent("lusty94_yoga:client:openYogaStore", function()
-    if Config.CoreSettings.Shop.Enabled then
-        if InvType == 'qb'then
-            TriggerServerEvent('lusty94_yoga:server:openYogaStore')
-        elseif InvType == 'ox' then
-            exports.ox_inventory:openInventory('shop', { type = 'YogaShop' })
-        end
-    end
-end)
+
 
 --target settings
 CreateThread(function()
     if Config.CoreSettings.Shop.Enabled then
         for k,v in pairs(Config.InteractionLocations) do
             if TargetType == 'qb' then
-                exports['qb-target']:AddBoxZone(v.Name, v.Coords, v.Width, v.Height, { name = v.Name, heading = v.Heading, debugPoly = Config.DebugPoly, minZ = v.MinZ, maxZ = v.MaxZ, }, { options = { { type = "client", event = v.Event, icon = v.Icon, label = v.Label, job = v.Job, item = v.Item, } }, distance = v.Distance, })
+                exports['qb-target']:AddBoxZone(v.Name, v.Coords, v.Width, v.Height, 
+                { 
+                    name = v.Name, 
+                    heading = v.Heading, 
+                    debugPoly = Config.DebugPoly, 
+                    minZ = v.MinZ, 
+                    maxZ = v.MaxZ, 
+                }, 
+                { 
+                    options = { 
+                        { 
+                            type = "client", 
+                            action = function()
+                                if not busy then
+                                    openYogaStore()
+                                else
+                                    SendNotify(Config.Language.Notifications.Busy, 'error', 5000)
+                                end
+                            end,
+                            icon = v.Icon, 
+                            label = v.Label,
+                        } 
+                    }, 
+                    distance = v.Distance,
+                })
             elseif TargetType =='ox' then
-                exports.ox_target:addBoxZone({
-                    coords = v.Coords, size = v.Size, rotation = v.Heading, debug = Config.DebugPoly, options = { { id = v.Name, item = v.Item, groups = v.Job, event = v.Event, label = v.Label, icon = v.Icon, distance = v.Distance, } }, })
+                exports.ox_target:addBoxZone(
+                    {
+                        coords = v.Coords,
+                        size = v.Size,
+                        rotation = v.Heading,
+                        debug = Config.DebugPoly,
+                        options = {
+                            { 
+                                id = v.Name, 
+                                onSelect = function()
+                                    if not busy then
+                                        openYogaStore()
+                                    else
+                                        SendNotify(Config.Language.Notifications.Busy, 'error', 5000)
+                                    end
+                                end,
+                                label = v.Label, 
+                                icon = v.Icon, 
+                                distance = v.Distance, 
+                            }
+                        },
+                    })
             elseif TargetType == 'custom' then
                 --insert your own custom target code here
             end
@@ -78,14 +113,26 @@ RegisterNetEvent('lusty94_yoga:client:PlaceYogaMat', function()
     QBCore.Functions.TriggerCallback('lusty94_yoga:get:YogaMat', function(HasItems)  
         if HasItems then
             if busy then
-                SendNotify("You are already doing something!", 'error', 2000)
+                SendNotify(Config.Language.Notifications.Busy, 'error', 5000)
             else
                 if matSpawned then
-                    SendNotify("You must remove your yoga mat before placing another!", 'error', 2000)
+                    SendNotify(Config.Language.Notifications.RemoveMat, 'error', 5000)
                     return
                 end
                 busy = true
-                if lib.progressCircle({ duration = Config.CoreSettings.Timers.PlaceMat, label = 'Placing yoga mat...', position = 'bottom', useWhileDead = false, canCancel = true, disable = { car = true, move = true, }, anim = { dict = Config.Animations.PlaceYogaMat.dict, clip = Config.Animations.PlaceYogaMat.anim, flag = Config.Animations.PlaceYogaMat.flag, }, }) then
+                if lib.progressCircle({ 
+                    duration = Config.CoreSettings.Timers.PlaceMat, 
+                    label = Config.Language.ProgressBar.PlaceMat, 
+                    position = 'bottom', 
+                    useWhileDead = false, 
+                    canCancel = true, 
+                    disable = { car = true, move = true, combat = true, mouse  = false, }, 
+                    anim = { 
+                        dict = Config.Animations.PlaceYogaMat.dict, 
+                        clip = Config.Animations.PlaceYogaMat.anim, 
+                        flag = Config.Animations.PlaceYogaMat.flag,
+                    }, 
+                }) then
                     local playerPed = PlayerPedId()
                     local coords    = GetEntityCoords(playerPed)
                     local x, y, z   = table.unpack(coords)        
@@ -97,20 +144,74 @@ RegisterNetEvent('lusty94_yoga:client:PlaceYogaMat', function()
                     local heading   = GetEntityHeading(yogaprop)
                     SetEntityHeading(playerPed, GetEntityHeading(playerPed))
                     if TargetType == 'qb' then
-                        exports['qb-target']:AddTargetEntity(yogaprop, { options = { { type = "client", event = 'lusty94_yoga:client:performYoga', icon = 'fa-solid fa-hand-point-up', label = 'Perform Yoga', }, { type = "client", event = 'lusty94_yoga:client:removeYogaMat', icon = 'fa-solid fa-hand-point-up', label = 'Remove Yoga Mat', }, }, distance = 1.75 })
+                        exports['qb-target']:AddTargetEntity(yogaprop, { 
+                            options = { 
+                                { 
+                                    type = "client", 
+                                    action = function()
+                                        if not busy then
+                                            performYoga()
+                                        else
+                                            SendNotify(Config.Language.Notifications.Busy, 'error', 5000)
+                                        end
+                                    end,
+                                    icon = 'fa-solid fa-hand-point-up', 
+                                    label = 'Perform Yoga', 
+                                }, 
+                                { 
+                                    type = "client", 
+                                    action = function()
+                                        if not busy then
+                                            removeYogaMat()
+                                        else
+                                            SendNotify(Config.Language.Notifications.Busy, 'error', 5000)
+                                        end
+                                    end,
+                                    icon = 'fa-solid fa-hand-point-up', 
+                                    label = 'Remove Yoga Mat', 
+                                },
+                            }, 
+                            distance = 1.75,
+                        })
                     elseif TargetType == 'ox' then
-                        exports.ox_target:addLocalEntity(yogaprop, { { name = 'yogaprop', icon = 'fa-solid fa-hand-point-up', label = 'Perform Yoga', event = 'lusty94_yoga:client:performYoga',distance = 1.75}, { name = 'yogaprop', icon = 'fa-solid fa-hand-point-up', label = 'Remove Yoga Mat', event = 'lusty94_yoga:client:removeYogaMat',distance = 1.75}, })
+                        exports.ox_target:addLocalEntity(yogaprop, { 
+                            { 
+                                name = 'yogaprop', 
+                                icon = 'fa-solid fa-hand-point-up', 
+                                label = 'Perform Yoga', 
+                                onSelect = function()
+                                    if not busy then
+                                        performYoga()
+                                    else
+                                        SendNotify(Config.Language.Notifications.Busy, 'error', 5000)
+                                    end
+                                end,
+                                distance = 1.75,
+                            }, 
+                            { 
+                                name = 'yogaprop', 
+                                icon = 'fa-solid fa-hand-point-up', 
+                                label = 'Remove Yoga Mat', 
+                                onSelect = function()
+                                    if not busy then
+                                        removeYogaMat()
+                                    else
+                                        SendNotify(Config.Language.Notifications.Busy, 'error', 5000)
+                                    end
+                                end,
+                                distance = 1.75,
+                            },
+                        })
                     end
                     matSpawned = true
                     busy = false
-                    SendNotify("Yoga mat placed!", 'success', 2000)
                 else 
                     busy = false
-                    SendNotify("Action cancelled!", 'success', 2000)
+                    SendNotify(Config.Language.Notifications.Cancelled, 'error', 5000)
                 end
             end
         else
-            SendNotify("How can you place a yoga mat without one?!", 'error', 2500)
+            SendNotify(Config.Language.Notifications.MissingMat, 'error', 5000)
         end
     end)     
 end)
@@ -127,19 +228,31 @@ function yogaCooldown()
     end)
 end
 
+function yogaEffect()
+    if Config.CoreSettings.Effects.AddHealth then
+        SetEntityHealth(playerPed, GetEntityHealth(playerPed) + Config.CoreSettings.Effects.HealthAmount)
+    end
+    if Config.CoreSettings.Effects.AddArmour then
+        AddArmourToPed(playerPed, Config.CoreSettings.Effects.ArmourAmount)
+    end
+    if Config.CoreSettings.Effects.RemoveStress then
+        TriggerServerEvent(Config.CoreSettings.EventNames.HudStatus, Config.CoreSettings.Effects.RemoveStressAmount)
+    end
+end
+
 --perform yoga
-RegisterNetEvent('lusty94_yoga:client:performYoga', function()
+function performYoga()
     local playerPed = PlayerPedId()
     if hasPerformed then
-        SendNotify("You must wait a short while before doing that again!", 'error', 2000)
+        SendNotify(Config.Language.Notifications.Wait, 'error', 5000)
         return
     else
         if busy then
-            SendNotify("You are already doing something!", 'error', 2000)
+            SendNotify(Config.Language.Notifications.Busy, 'error', 5000)
         else
             QBCore.Functions.TriggerCallback('lusty94_yoga:get:YogaMat', function(HasItems)  
                 if HasItems then
-                    local success = lib.skillCheck({'easy', 'easy', 'easy', 'easy', 'easy'}, {'e'})
+                    local success = lib.skillCheck({'easy', 'easy', 'easy', 'easy', 'easy'}, {'e'}) -- change skillcheck settings here
                     if success then
                         busy = true
                         local matcoords    = GetEntityCoords(yogaprop)
@@ -148,66 +261,74 @@ RegisterNetEvent('lusty94_yoga:client:performYoga', function()
                         SetEntityHeading(playerPed, heading + 90)
                         if lib.progressCircle({ 
                             duration = Config.CoreSettings.Timers.PerformYoga, 
-                            label = 'Performing yoga...', 
+                            label = Config.Language.ProgressBar.PerformYoga, 
                             position = 'bottom', 
                             useWhileDead = false, 
                             canCancel = true, 
-                            disable = { car = true, move = true, }, 
+                            disable = { car = true, move = true, combat = true, mouse  = false, }, 
                             anim = { dict = Config.Animations.PerformYoga.dict, clip = Config.Animations.PerformYoga.anim, flag = Config.Animations.PerformYoga.flag, }, 
                         }) then
-                            if Config.CoreSettings.Effects.AddHealth then
-                                SetEntityHealth(playerPed, GetEntityHealth(playerPed) + Config.CoreSettings.Effects.HealthAmount)
-                            end
-                            if Config.CoreSettings.Effects.AddArmour then
-                                AddArmourToPed(playerPed, Config.CoreSettings.Effects.ArmourAmount)
-                            end
-                            if Config.CoreSettings.Effects.RemoveStress then
-                                TriggerServerEvent(Config.CoreSettings.EventNames.HudStatus, Config.CoreSettings.Effects.RemoveStressAmount)
-                            end
+                            yogaEffect()
+                            yogaCooldown()
                             busy = false
-                            SendNotify("You performed yoga!", 'success', 2000)
                         else 
                             busy = false
-                            SendNotify("Action cancelled!", 'success', 2000)
+                            SendNotify(Config.Language.Notifications.Cancelled, 'error', 5000)
                         end
                     else
-                        SendNotify("Action failed.", 'error', 2000)
+                        SendNotify(Config.Language.Notifications.Failed, 'error', 5000)
                     end
                 else
-                    SendNotify("How can you perform yoga without a yoga mat?!", 'error', 2500)
+                    SendNotify(Config.Language.Notifications.MissingMat, 'error', 5000)
                 end
             end)     
         end
     end
-end)
+end
 
 
---delete yoga mat prop
-local function delete_prop(model)
-    if DoesEntityExist(model) then
-        DeleteEntity(model)
+-- delete yoga mat
+function removeYogaMat()
+    if yogaprop then
+        if TargetType == 'qb' then 
+            exports['qb-target']:RemoveTargetEntity(yogaprop, 'yogaprop') 
+        elseif TargetType == 'ox' then 
+            exports.ox_target:removeLocalEntity(yogaprop, 'yogaprop') 
+        end
+        if DoesEntityExist(yogaprop) then
+            DeleteEntity(yogaprop)
+        end
+        yogaprop = nil
+        matSpawned = false
     end
 end
 
 
-
--- delete yoga mat
-RegisterNetEvent('lusty94_yoga:client:removeYogaMat', function()
-    if yogaprop then
-        if TargetType == 'qb' then exports['qb-target']:RemoveTargetEntity(yogaprop, 'yogaprop') elseif TargetType == 'ox' then exports.ox_target:removeLocalEntity(yogaprop, 'yogaprop') end
-        delete_prop(yogaprop)
-        yogaprop = nil
-        matSpawned = false
+--Yoga Mat Store
+function openYogaStore()
+    if Config.CoreSettings.Shop.Enabled then
+        if InvType == 'qb'then
+            TriggerServerEvent('lusty94_yoga:server:openYogaStore')
+        elseif InvType == 'ox' then
+            exports.ox_inventory:openInventory('shop', { type = 'YogaShop' })
+        end
     end
-end)
+end
+
 
 --dont touch
 AddEventHandler('onResourceStop', function(resource)
 	if resource == GetCurrentResourceName() then
         busy = false
-        delete_prop(yogaprop)
+        if DoesEntityExist(yogaprop) then
+            DeleteEntity(yogaprop)
+        end
         if Config.CoreSettings.Shop.Enabled then for k, v in pairs(Config.InteractionLocations) do if TargetType == 'qb' then exports['qb-target']:RemoveZone(v.Name) elseif TargetType == 'ox' then exports.ox_target:removeZone(v.Name) end end end
-        if TargetType == 'qb' then exports['qb-target']:RemoveTargetEntity(yogaprop, 'yogaprop') elseif TargetType == 'ox' then exports.ox_target:removeLocalEntity(yogaprop, 'yogaprop') end
-        print('^5--<^3!^5>-- ^7| Lusty94 |^5 ^5--<^3!^5>--^7 Yoga V2.0.1 Stopped Successfully ^5--<^3!^5>--^7')
+        if TargetType == 'qb' then 
+            exports['qb-target']:RemoveTargetEntity(yogaprop, 'yogaprop') 
+        elseif TargetType == 'ox' then 
+            exports.ox_target:removeLocalEntity(yogaprop, 'yogaprop') 
+        end
+        print('^5--<^3!^5>-- ^7| Lusty94 |^5 ^5--<^3!^5>--^7 Yoga V2.1.0 Stopped Successfully ^5--<^3!^5>--^7')
 	end
 end)

@@ -1,15 +1,14 @@
 ## Lusty94_Yoga
 
 
-<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-PLEASE MAKE SURE TO READ THIS ENTIRE FILE AS IT COVERS SOME IMPORTANT INFORMATION
 
-<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-======================================
-SCRIPT SUPPORT VIA DISCORD: https://discord.gg/BJGFrThmA8
-======================================
+## Support
+
+- Script support via Discord: https://discord.gg/BJGFrThmA8
+
+
 
 
 
@@ -24,8 +23,8 @@ SCRIPT SUPPORT VIA DISCORD: https://discord.gg/BJGFrThmA8
 
 - Make sure to download all dependencies and ensure they start BEFORE this script
 - If adding the yoga mat to your own store then make sure to set shop = enabled to false in config
-- Add items below to your core/shared/items.lua - ox_invnetory users place items snippet to inventory/data/items.lua
-- Add all images inside [images] folder to your inventory/html/images folder - ox_inventory users place images inside inventory/web/images
+- Add items below to your items.lua
+- Add all images inside [images] folder to your inventory/images folder
 
 
 

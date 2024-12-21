@@ -13,10 +13,17 @@ Config = {}
 
 -- Below you can change multiple options to suit your server needs.
 
-Config.DebugPoly = false
+Config.DebugPoly = true
 
 Config.Blips = {
-    {title = 'Yoga Store', colour = 5, id = 409, coords = vector3(-1167.63, -1586.75, 3.96), scale = 0.7, useblip = true}, -- BLIP FOR YOGA STORE
+    {
+        useblip = true,
+        title = 'Yoga Store', 
+        colour = 5, 
+        id = 409, 
+        coords = vector3(-1167.63, -1586.75, 3.96),
+        scale = 0.7, 
+    },
 }
 
 
@@ -25,11 +32,10 @@ Config.CoreSettings = {
         HudStatus = 'hud:server:RelieveStress', -- NAME OF HUD EVENT TO RELIEVE STRESS - DEFAULT EVENT NAME IS 'hud:server:RelieveStress'
     }, 
     Notify = {
-        Type = 'qb', -- support for qb-core notify, okokNotify, mythic_notify, boii_ui notify and ox_lib notify
+        Type = 'qb', -- support for qb-core notify, okokNotify, mythic_notify and ox_lib notify
         --use 'qb' for default qb-core notify
         --use 'okok' for okokNotify
         --use 'mythic' for mythic_notify
-        --use 'boii' for boii_ui notify
         --use 'ox' for ox_lib notify
     },
     Target = {
@@ -65,7 +71,19 @@ Config.CoreSettings = {
 
 
 Config.InteractionLocations = { --name must be unique, coords is location, size is for ox target only, width is width of zone, height is height of zone, heading is direction, minZ is minZ of zone, maxZ is maxZ of zone, icon is target icon, label is target label, item is required item to target zone, job is required job to target zone leave as nil if not needed, distance is target distance
-    { Name = 'yogashop1', Coords = vector3(-1165.15, -1584.65, 4.0), Size = vec3(1.5,1.0,2.0), Width = 1.5, Height = 1.0, Heading = 301.39, MinZ = 3.75, MaxZ = 5.0, Icon = 'fa-solid fa-cash-register', Label = 'Open Yoga Store', Event = 'lusty94_yoga:client:openYogaStore', Distance = 2.0, Item = nil, Job = nil, },
+    { 
+        Name = 'yogashop1',
+        Coords = vector3(-1165.15, -1584.65, 4.0),
+        Size = vec3(1.5,1.0,2.0),
+        Width = 1.5,
+        Height = 1.0,
+        Heading = 301.39,
+        MinZ = 3.75,
+        MaxZ = 5.0,
+        Icon = 'fa-solid fa-cash-register',
+        Label = 'Open Yoga Store',
+        Distance = 2.0,
+    },
 }
 
 
@@ -79,5 +97,23 @@ Config.Animations = {
         dict = "amb@world_human_yoga@male@base",
         anim = "base_b",
         flag = 42,
+    },
+}
+
+
+
+Config.Language = {
+    ProgressBar = {
+        PlaceMat = 'Placing yoga mat',
+        PerformYoga = 'Performing Yoga',
+    },
+    Notifications = {
+        Busy = 'You are already doing something!',
+        Cancelled = 'Action cancelled!',
+        CantCarry = 'You cant carry anymore!',
+        Failed = 'Action failed!',
+        MissingMat = 'You are missing a yoga mat!',
+        RemoveMat = 'You must remove your yoga mat before trying to place another!',
+        Wait = 'You must wait a short while before doing that again!',
     },
 }
